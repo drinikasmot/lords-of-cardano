@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lords of Cardano — A Governance Adventure</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════
+   LORDS OF CARDANO
+   Data: be.gov.tools (GovTools API, no key needed)
+   Tiers: Castle 100M+, Manor 10M-100M, Cottage 1M-10M
+   ═══════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a1a;font-family:'Press Start 2P',monospace;color:#e0e0e0;overflow-x:hidden}
+#G{width:100%;background:#0a0a1a}
+.SCR{display:none;width:100%;flex-direction:column;align-items:center}
+.SCR.on{display:flex}
+.starbg{position:absolute;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;background:#fff;border-radius:50%}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:.45}33%{opacity:.82}}
+.tf{animation:flicker .42s infinite}
+@keyframes pulse{0%,100%{border-color:#ffd700;color:#ffd700}50%{border-color:#fa0;color:#fa0}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes fadeOut{0%{opacity:1}100%{opacity:0}}
+@keyframes playerWalk{0%{left:4%}100%{left:82%}}
+@keyframes promptBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes dc1{0%{left:-130px}100%{left:110%}}
+@keyframes dc2{0%{left:110%}100%{left:-130px}}
+@keyframes mR{0%{left:-40px}100%{left:110%}}
+@keyframes mL{0%{left:110%}100%{left:-40px}}
+.pxbtn{font-family:'Press Start 2P',monospace;background:#1a1a0a;color:#ffd700;border:3px solid #ffd700;padding:12px 26px;cursor:pointer;letter-spacing:2px;font-size:8px;position:relative;z-index:10}
+.pxbtn.pulse{animation:pulse 1.5s ease-in-out infinite}
+.pxbtn:hover{background:#2a2a0a;animation:none;border-color:#fff;color:#fff}
+.pxbtn:disabled{color:#444;border-color:#333;animation:none;cursor:default}
+.smbtn{font-family:'Press Start 2P',monospace;font-size:5px;background:#0d0d1a;color:#8888cc;border:2px solid #2a2a6a;padding:5px 8px;cursor:pointer}
+.smbtn:hover{border-color:#ffd700;color:#ffd700}
+.bklink{font-size:6px;color:#333366;cursor:pointer;letter-spacing:1px;position:relative;z-index:1;margin-top:10px}
+.bklink:hover{color:#8888cc}
+.hudsep{width:1px;height:28px;background:#2a2a6a;flex-shrink:0}
+.hudst{font-size:5px;color:#666688;text-align:center}
+.hudst span{display:block;font-size:6px;color:#ffd700;margin-top:2px}
+
+/* ─── S1 TITLE ─── */
+#S1{position:relative;min-height:700px;justify-content:flex-start;background:#0a0a1a;overflow:hidden}
+.t-moon{position:absolute;top:18px;right:60px;z-index:1}
+.t-cl{position:absolute;z-index:1}
+.cl1{animation:dc1 60s linear infinite;top:140px}
+.cl2{animation:dc2 80s linear infinite;top:162px;animation-delay:-22s}
+.t-mts{position:absolute;bottom:76px;left:0;right:0;z-index:1}
+.t-blds{position:absolute;bottom:76px;left:0;right:0;z-index:2;display:flex;align-items:flex-end;justify-content:space-around;padding:0 10px}
+.t-gnd{position:absolute;bottom:0;left:0;right:0;height:80px;background:#1a2a0a;border-top:4px solid #2a4a0a;z-index:1}
+.t-gndl{position:absolute;bottom:80px;left:0;right:0;height:4px;background:#2a4a0a;z-index:2}
+.t-sps{position:absolute;bottom:80px;left:0;right:0;z-index:3;height:48px}
+.tsp{position:absolute;bottom:0;image-rendering:pixelated}
+.tsk{animation:mR 20s linear infinite,bob .4s steps(1) infinite}
+.tsp2{animation:mL 24s linear infinite,bob .4s steps(1) infinite;animation-delay:-4s,-4s}
+.tsw{animation:mR 26s linear infinite,bob .45s steps(1) infinite;animation-delay:-10s,-10s}
+.tss{animation:mL 18s linear infinite,bob .45s steps(1) infinite;animation-delay:-7s,-7s}
+.tsr{animation:mR 15s linear infinite,bob .35s steps(1) infinite;animation-delay:-3s,-3s}
+.tsra{animation:mL 22s linear infinite,bob .35s steps(1) infinite;animation-delay:-14s,-14s}
+.title-block{position:relative;z-index:10;text-align:center;margin-top:28px}
+.tl-lords{font-size:38px;color:#ffd700;letter-spacing:6px;text-shadow:5px 5px #000,3px 3px #000;line-height:1.2}
+.tl-of{font-size:14px;color:#c8a000;letter-spacing:10px;margin:8px 0}
+.tl-card{font-size:46px;color:#ffd700;letter-spacing:4px;text-shadow:5px 5px #000,3px 3px #000;line-height:1.1}
+.tl-line{width:480px;height:4px;background:#ffd700;margin:14px auto}
+.tl-sub{font-size:9px;color:#8888cc;letter-spacing:3px;margin-top:10px}
+.tl-sub2{font-size:7px;color:#444466;letter-spacing:2px;margin-top:6px}
+.t-badge{position:absolute;bottom:10px;right:14px;z-index:10;font-size:5px;color:#333366}
+.ld-bar-wrap{position:relative;z-index:10;width:100%;max-width:320px;margin-top:14px;text-align:center}
+.ld-lbl{font-size:6px;color:#8888cc;margin-bottom:6px}
+.ld-out{height:8px;border:2px solid #2a2a6a;background:#0d0d1a;width:100%}
+.ld-in{height:100%;background:#ffd700;width:0%;transition:width .4s}
+
+/* ─── S2 CHAR ─── */
+#S2{background:#0a0a1a;padding:16px 12px 18px;position:relative;min-height:640px}
+.cs-tabs{display:flex;border:2px solid #4a4a8a;margin-bottom:12px;position:relative;z-index:1}
+.cs-tab{font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 16px;background:#0d0d1a;color:#8888cc;border:none;cursor:pointer}
+.cs-tab.on{background:#1a1a3a;color:#ffd700}
+.cs-grid{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;width:100%;max-width:660px;margin-bottom:12px;position:relative;z-index:1}
+.cs-card{background:#0d0d1a;border:3px solid #2a2a6a;padding:10px 8px 8px;cursor:pointer;width:178px;display:flex;flex-direction:column;align-items:center;position:relative}
+.cs-card:hover{border-color:#aaf}.cs-card.sel{border-color:#ffd700;background:#12120a}
+.cs-card.sel::after{content:'✔ CHOSEN';position:absolute;top:-1px;left:50%;transform:translateX(-50%);font-size:5px;background:#ffd700;color:#0a0a00;padding:2px 6px}
+.cs-card.hid{display:none}
+.cs-cn{font-size:7px;color:#ffd700;margin-bottom:5px}.cs-cl{font-size:5px;color:#8888cc;margin-bottom:8px}
+.cs-stats{width:100%;display:flex;flex-direction:column;gap:3px}
+.cs-sr{display:flex;align-items:center;gap:5px}
+.cs-sl{font-size:5px;color:#666;width:30px;text-align:right;flex-shrink:0}
+.cs-bar{flex:1;height:5px;background:#1a1a3a;border:1px solid #2a2a5a;position:relative}
+.cs-fill{height:100%;position:absolute;left:0;top:0}
+.s-str .cs-fill{background:#c42}.s-mag .cs-fill{background:#64c}.s-agi .cs-fill{background:#2a4}.s-def .cs-fill{background:#26c}
+.cs-panel{width:100%;max-width:660px;border:2px solid #2a2a6a;background:#0d0d1a;padding:10px 12px;display:flex;align-items:center;gap:14px;min-height:58px;margin-bottom:12px;position:relative;z-index:1}
+.cs-pn{font-size:7px;color:#ffd700;margin-bottom:4px}.cs-pd{font-size:5px;color:#aaa;line-height:1.9}
+.cs-pe{font-size:6px;color:#333366;width:100%;text-align:center}
+
+/* ─── S3 DISTRICT ─── */
+#S3{background:#0a0a1a;padding:16px 12px 18px;position:relative;min-height:640px}
+.ds-top{display:flex;align-items:center;gap:10px;width:100%;max-width:660px;margin-bottom:10px;border-bottom:2px solid #1a1a4a;padding-bottom:10px;position:relative;z-index:1}
+.ds-hn{font-size:7px;color:#ffd700;margin-bottom:3px}.ds-hl{font-size:5px;color:#8888cc}
+.ds-cards{display:flex;flex-direction:column;gap:10px;width:100%;max-width:660px;position:relative;z-index:1}
+.ds-card{border:3px solid;cursor:pointer;overflow:hidden;display:flex;flex-direction:column}
+.ds-c{border-color:#ffd700;background:#0e0e00}.ds-m{border-color:#a0a0cc;background:#08080e}.ds-k{border-color:#8B6914;background:#080800}
+.ds-hdr{display:flex;align-items:center;gap:12px;padding:10px 12px}
+.ds-c .ds-hdr{background:#1e1a00}.ds-m .ds-hdr{background:#0e0e18}.ds-k .ds-hdr{background:#120e00}
+.ds-tier{font-size:5px;letter-spacing:2px;margin-bottom:4px}
+.ds-c .ds-tier{color:#ffd700}.ds-m .ds-tier{color:#a0a0cc}.ds-k .ds-tier{color:#8B6914}
+.ds-dn{font-size:10px;margin-bottom:4px}
+.ds-c .ds-dn{color:#ffd700}.ds-m .ds-dn{color:#c0c0e0}.ds-k .ds-dn{color:#cd9a3a}
+.ds-rng{font-size:5px;color:#444466}
+.ds-scene{width:100%;height:70px;overflow:hidden}
+.ds-c .ds-scene{background:#0a0800}.ds-m .ds-scene{background:#060810}.ds-k .ds-scene{background:#080600}
+.ds-stats{display:flex;border-top:1px solid #1a1a3a}
+.ds-stat{flex:1;padding:7px 5px;text-align:center;border-right:1px solid #1a1a3a;font-size:5px}
+.ds-stat:last-child{border-right:none}
+.ds-slbl{color:#333355;margin-bottom:3px}
+.ds-c .ds-sv{color:#ffd700;font-size:7px}.ds-m .ds-sv{color:#a0a0cc;font-size:7px}.ds-k .ds-sv{color:#cd9a3a;font-size:7px}
+.ds-sel-c{border-color:#fff!important}.ds-sel-m{border-color:#fff!important}.ds-sel-k{border-color:#fc4!important}
+
+/* ─── S4 MAP ─── */
+#S4{background:#0a0a1a;position:relative;min-height:580px}
+.map-hud{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#0d0d1a;border-bottom:3px solid #ffd700;flex-wrap:wrap;position:relative;z-index:10;width:100%}
+.map-search{display:flex;padding:6px 12px;background:#080810;border-bottom:2px solid #1a1a3a;position:relative;z-index:10;width:100%}
+.map-search input{flex:1;background:#0d0d1a;border:2px solid #2a2a6a;border-right:none;color:#e0e0e0;padding:5px 8px;font-family:'Press Start 2P',monospace;font-size:6px;outline:none}
+.map-search input:focus{border-color:#ffd700}
+.map-search button{font-family:'Press Start 2P',monospace;font-size:6px;background:#1a1a3a;border:2px solid #2a2a6a;color:#ffd700;padding:5px 8px;cursor:pointer}
+.map-area{position:relative;overflow-x:auto;overflow-y:hidden;height:280px;background:#0a0800;border-bottom:4px solid #2a4a0a;width:100%}
+.map-inner{position:relative;height:280px;min-width:100%}
+.map-sky{position:absolute;inset:0;overflow:hidden}
+.map-gf{position:absolute;bottom:66px;left:0;right:0;height:14px;background:#111900;border-top:2px solid #1a2800}
+.map-gn{position:absolute;bottom:0;left:0;right:0;height:66px;background:#141e00;border-top:3px solid #2a3a00}
+.map-bl{position:absolute;bottom:66px;left:0;height:214px;display:flex;align-items:flex-end;padding:0 18px;min-width:100%}
+.d-slot{display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:0 8px;flex-shrink:0}
+.d-slot:hover svg{filter:brightness(1.25)}.d-slot.hl .d-lbl{color:#fff}
+.d-lbl{font-size:5px;color:#c8a000;text-align:center;max-width:88px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.d-pow{font-size:5px;color:#7aff7a;text-align:center;margin-bottom:2px}
+.pw{position:absolute;bottom:66px;z-index:5;pointer-events:none;animation:playerWalk 18s ease-in-out infinite alternate}
+.pw svg{animation:bob .4s steps(1) infinite;image-rendering:pixelated}
+.map-panel{background:#0d0d1a;border-top:3px solid #ffd700;position:relative;z-index:10;min-height:140px;width:100%}
+.mp-empty{padding:18px;text-align:center;font-size:6px;color:#333366}
+.mp-in{display:flex;gap:0}
+.mp-l{padding:12px 14px;border-right:2px solid #1a1a3a;min-width:160px;flex-shrink:0}
+.mp-dn{font-size:7px;color:#ffd700;margin-bottom:4px;word-break:break-all}
+.mp-pw{font-size:6px;color:#7aff7a;margin-bottom:8px}
+.mp-mt{font-size:5px;color:#444466;line-height:2.2}
+.mp-r{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:7px}
+.mp-r h3{font-size:5px;color:#666;margin-bottom:2px;letter-spacing:1px}
+.qbtn{font-family:'Press Start 2P',monospace;font-size:5px;background:#0d0d1a;border:2px solid #2a2a6a;color:#aad4ff;padding:6px 8px;cursor:pointer;text-align:left}
+.qbtn:hover:not(:disabled){border-color:#ffd700;color:#ffd700}.qbtn:disabled{opacity:.5;cursor:wait}
+.dlgbox{border:2px solid #2a2a6a;padding:8px 10px;background:#080810}
+.dlgtxt{font-size:5px;color:#ddd;line-height:2.2}
+.vscroll{padding:8px 14px;border-top:2px solid #1a1a3a;width:100%}
+.vscroll h3{font-size:5px;color:#444;margin-bottom:5px;letter-spacing:1px}
+.vrow{display:flex;gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid #0f0f22;font-size:5px}
+.vrid{flex:1;color:#333355;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vy{color:#7aff7a;min-width:28px}.vno{color:#f66;min-width:28px}.va{color:#555;min-width:28px}
+
+/* ─── S5 INTERIOR ─── */
+#S5{background:#0a0a1a;position:relative;min-height:600px}
+.int-hud{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#0d0d1a;border-bottom:3px solid #ffd700;flex-wrap:wrap;width:100%}
+.room-wrap{position:relative;overflow:hidden;width:100%;flex-shrink:0}
+.enter-ov{position:absolute;inset:0;background:#0a0a1a;z-index:50;pointer-events:none}
+.enter-ov.fade{animation:fadeOut .8s ease-out forwards}
+.npc-hit{position:absolute;cursor:pointer;z-index:15}
+.npc-hit:hover{filter:brightness(1.3)}
+.int-prompt{position:absolute;font-size:5px;color:#ffd700;background:#0a0a1a;border:2px solid #ffd700;padding:4px 8px;z-index:20;pointer-events:none;white-space:nowrap;animation:promptBob .8s ease-in-out infinite}
+.dlg-panel{background:#0d0d1a;border-top:3px solid #ffd700;display:flex;flex-direction:column;width:100%}
+.dlg-in{display:flex;gap:0}
+.dlg-l{padding:12px 14px;border-right:2px solid #1a1a3a;min-width:155px;flex-shrink:0;display:flex;flex-direction:column;gap:5px}
+.dlg-nn{font-size:7px;color:#ffd700;margin-bottom:2px}.dlg-nt{font-size:5px;color:#8888cc;margin-bottom:6px}
+.dlg-nm{font-size:5px;color:#444466;line-height:2.2}
+.dlg-r{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:7px}
+.dlg-r h3{font-size:5px;color:#555;margin-bottom:2px;letter-spacing:1px}
+.dlgbox2{border:2px solid #2a2a6a;padding:8px 10px;background:#080810;min-height:60px}
+.dlgtxt2{font-size:5px;color:#ddd;line-height:2.2}
+.dlgspk{font-size:5px;color:#ffd700;margin-bottom:4px}
+</style>
+
+<div id="G">
+
+<!-- ══ S1 TITLE ══ -->
+<div id="S1" class="SCR on">
+  <div class="starbg" id="stT"></div>
+  <div class="t-moon"><svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" fill="#fffacc" stroke="#e8e090" stroke-width="1"/><circle cx="15" cy="14" r="3.5" fill="#e8e090" opacity=".5"/><circle cx="26" cy="24" r="2.5" fill="#e8e090" opacity=".4"/></svg></div>
+  <div class="t-cl cl1"><svg width="110" height="30" viewBox="0 0 110 30"><rect x="20" y="16" width="68" height="11" rx="2" fill="#1e2240"/><rect x="8" y="12" width="34" height="11" rx="2" fill="#1e2240"/><rect x="36" y="6" width="46" height="16" rx="2" fill="#1e2240"/></svg></div>
+  <div class="t-cl cl2"><svg width="88" height="28" viewBox="0 0 88 28"><rect x="14" y="12" width="56" height="11" rx="2" fill="#1e2240"/><rect x="6" y="9" width="28" height="11" rx="2" fill="#1e2240"/><rect x="28" y="5" width="38" height="14" rx="2" fill="#1e2240"/></svg></div>
+  <div class="title-block">
+    <div class="tl-lords">LORDS</div><div class="tl-of">— OF —</div><div class="tl-card">CARDANO</div>
+    <div class="tl-line"></div><div class="tl-sub">A GOVERNANCE ADVENTURE</div><div class="tl-sub2">Explore · Discover · Question</div>
+  </div>
+  <button class="pxbtn pulse" style="margin-top:18px" onclick="startGame()">⚔ &nbsp;ENTER THE REALM&nbsp; ⚔</button>
+  <div class="ld-bar-wrap" id="ld-bar-wrap" style="display:none">
+    <div class="ld-lbl" id="ld-lbl">The herald rides to gather news...</div>
+    <div class="ld-out"><div class="ld-in" id="ld-in"></div></div>
+  </div>
+  <div class="t-mts"><svg width="100%" height="120" viewBox="0 0 680 120" preserveAspectRatio="none"><polygon points="0,120 80,28 160,120" fill="#0d1a0d"/><polygon points="60,120 200,8 340,120" fill="#111f11"/><polygon points="220,120 340,38 460,120" fill="#0d1a0d"/><polygon points="370,120 480,18 590,120" fill="#111f11"/><polygon points="500,120 600,42 700,120" fill="#0d1a0d"/></svg></div>
+  <div class="t-blds">
+    <svg style="position:absolute;left:6px;bottom:0;image-rendering:pixelated" width="44" height="68" viewBox="0 0 44 68"><rect x="4" y="34" width="36" height="34" fill="#5a4a3a" stroke="#3a2a1a" stroke-width="2"/><polygon points="0,38 22,8 44,38" fill="#3a2a1a" stroke="#2a1a0a" stroke-width="2"/><rect x="14" y="46" width="14" height="22" rx="1" fill="#2a1a00"/><rect x="4" y="44" width="9" height="10" rx="1" fill="#1a1a3a"/><rect x="29" y="44" width="9" height="10" rx="1" fill="#1a1a3a"/></svg>
+    <svg width="96" height="180" viewBox="0 0 96 180" style="image-rendering:pixelated"><rect x="8" y="90" width="80" height="90" fill="#5a4a3a" stroke="#3a2a1a" stroke-width="2"/><rect x="8" y="78" width="12" height="18" fill="#5a4a3a" stroke="#3a2a1a" stroke-width="2"/><rect x="28" y="78" width="12" height="18" fill="#5a4a3a" stroke="#3a2a1a" stroke-width="2"/><rect x="56" y="78" width="12" height="18" fill="#5a4a3a" stroke="#3a2a1a" stroke-width="2"/><rect x="76" y="78" width="12" height="18" fill="#5a4a3a" stroke="#3a2a1a" stroke-width="2"/><rect x="0" y="50" width="26" height="130" fill="#6a5a4a" stroke="#3a2a1a" stroke-width="2"/><rect x="0" y="38" width="8" height="18" fill="#6a5a4a" stroke="#3a2a1a" stroke-width="2"/><rect x="18" y="38" width="8" height="18" fill="#6a5a4a" stroke="#3a2a1a" stroke-width="2"/><rect x="70" y="50" width="26" height="130" fill="#6a5a4a" stroke="#3a2a1a" stroke-width="2"/><rect x="70" y="38" width="8" height="18" fill="#6a5a4a" stroke="#3a2a1a" stroke-width="2"/><rect x="88" y="38" width="8" height="18" fill="#6a5a4a" stroke="#3a2a1a" stroke-width="2"/><rect x="32" y="24" width="32" height="156" fill="#7a6a5a" stroke="#3a2a1a" stroke-width="2"/><rect x="47" y="2" width="2" height="16" fill="#8a7a6a"/><polygon points="49,2 63,6 49,10" fill="#cc2200"/><rect x="38" y="130" width="20" height="50" rx="2" fill="#1a0a00"/><rect x="17" y="94" width="6" height="6" fill="#ff8800" class="tf"/><rect x="73" y="94" width="6" height="6" fill="#ff8800" class="tf"/></svg>
+    <svg width="110" height="220" viewBox="0 0 110 220" style="image-rendering:pixelated"><rect x="10" y="110" width="90" height="110" fill="#5a3a6a" stroke="#2a1a3a" stroke-width="2"/><rect x="10" y="98" width="12" height="18" fill="#5a3a6a" stroke="#2a1a3a" stroke-width="2"/><rect x="30" y="98" width="12" height="18" fill="#5a3a6a" stroke="#2a1a3a" stroke-width="2"/><rect x="58" y="98" width="12" height="18" fill="#5a3a6a" stroke="#2a1a3a" stroke-width="2"/><rect x="78" y="98" width="12" height="18" fill="#5a3a6a" stroke="#2a1a3a" stroke-width="2"/><rect x="0" y="60" width="28" height="160" fill="#6a4a7a" stroke="#2a1a3a" stroke-width="2"/><rect x="82" y="60" width="28" height="160" fill="#6a4a7a" stroke="#2a1a3a" stroke-width="2"/><rect x="36" y="10" width="38" height="210" fill="#7a4a8a" stroke="#2a1a3a" stroke-width="2"/><rect x="54" y="0" width="2" height="14" fill="#9a8aaa"/><polygon points="56,0 72,4 56,8" fill="#ffdd00"/><rect x="42" y="168" width="26" height="52" rx="2" fill="#1a0a00"/><rect x="19" y="112" width="6" height="6" fill="#ff8800" class="tf"/><rect x="85" y="112" width="6" height="6" fill="#ff8800" class="tf"/></svg>
+    <svg width="68" height="112" viewBox="0 0 68 112" style="image-rendering:pixelated"><rect x="4" y="50" width="60" height="62" fill="#4a5a6a" stroke="#2a3a4a" stroke-width="2"/><polygon points="0,54 34,10 68,54" fill="#3a2a4a" stroke="#2a1a3a" stroke-width="2"/><rect x="46" y="16" width="8" height="22" fill="#3a2a4a" stroke="#2a1a3a" stroke-width="2"/><rect x="8" y="58" width="14" height="16" rx="1" fill="#1a1a3a"/><rect x="46" y="58" width="14" height="16" rx="1" fill="#1a1a3a"/><rect x="24" y="80" width="18" height="32" rx="2" fill="#2a1a00"/><rect x="15" y="65" width="5" height="5" fill="#ff8800" class="tf"/></svg>
+    <svg width="90" height="168" viewBox="0 0 90 168" style="image-rendering:pixelated"><rect x="8" y="80" width="74" height="88" fill="#4a3a5a" stroke="#2a1a3a" stroke-width="2"/><rect x="8" y="68" width="10" height="18" fill="#4a3a5a" stroke="#2a1a3a" stroke-width="2"/><rect x="26" y="68" width="10" height="18" fill="#4a3a5a" stroke="#2a1a3a" stroke-width="2"/><rect x="54" y="68" width="10" height="18" fill="#4a3a5a" stroke="#2a1a3a" stroke-width="2"/><rect x="72" y="68" width="10" height="18" fill="#4a3a5a" stroke="#2a1a3a" stroke-width="2"/><rect x="0" y="44" width="24" height="124" fill="#5a4a6a" stroke="#2a1a3a" stroke-width="2"/><rect x="66" y="44" width="24" height="124" fill="#5a4a6a" stroke="#2a1a3a" stroke-width="2"/><rect x="28" y="20" width="34" height="148" fill="#6a5a7a" stroke="#2a1a3a" stroke-width="2"/><rect x="43" y="2" width="2" height="12" fill="#7a6a8a"/><polygon points="45,2 57,5 45,8" fill="#aa22cc"/><rect x="34" y="120" width="22" height="48" rx="2" fill="#1a0a00"/><rect x="13" y="86" width="6" height="6" fill="#ff8800" class="tf"/><rect x="71" y="86" width="6" height="6" fill="#ff8800" class="tf"/></svg>
+    <svg style="position:absolute;right:6px;bottom:0;image-rendering:pixelated" width="42" height="62" viewBox="0 0 42 62"><rect x="4" y="30" width="34" height="32" fill="#4a5a3a" stroke="#2a3a1a" stroke-width="2"/><polygon points="0,34 21,8 42,34" fill="#2a3a1a" stroke="#1a2a0a" stroke-width="2"/><rect x="12" y="42" width="16" height="20" rx="1" fill="#2a1a00"/><rect x="4" y="40" width="8" height="10" rx="1" fill="#1a1a3a"/><rect x="28" y="40" width="8" height="10" rx="1" fill="#1a1a3a"/></svg>
+  </div>
+  <div class="t-gnd"></div><div class="t-gndl"></div>
+  <div class="t-sps">
+    <svg class="tsp tsk" width="20" height="32" viewBox="0 0 20 32"><rect x="6" y="0" width="8" height="8" fill="#bbb"/><rect x="4" y="2" width="12" height="6" fill="#ccc"/><rect x="6" y="5" width="8" height="2" fill="#333"/><rect x="4" y="8" width="12" height="12" fill="#aaa"/><rect x="9" y="10" width="2" height="6" fill="#c22"/><rect x="7" y="12" width="6" height="2" fill="#c22"/><rect x="0" y="8" width="4" height="8" fill="#aaa"/><rect x="16" y="8" width="4" height="8" fill="#aaa"/><rect x="17" y="4" width="2" height="14" fill="#eee"/><rect x="4" y="20" width="5" height="8" fill="#999"/><rect x="11" y="20" width="5" height="8" fill="#999"/><rect x="3" y="27" width="6" height="5" fill="#777"/><rect x="11" y="27" width="6" height="5" fill="#777"/></svg>
+    <svg class="tsp tsp2" width="20" height="32" viewBox="0 0 20 32" style="transform:scaleX(-1)"><rect x="6" y="0" width="8" height="7" fill="#d4a0d4"/><rect x="4" y="2" width="12" height="5" fill="#e8b8e8"/><rect x="4" y="7" width="12" height="13" fill="#d4a0d4"/><rect x="9" y="9" width="2" height="7" fill="#fd0"/><rect x="7" y="12" width="6" height="2" fill="#fd0"/><rect x="0" y="7" width="4" height="9" fill="#d4a0d4"/><rect x="16" y="7" width="4" height="9" fill="#d4a0d4"/><rect x="4" y="20" width="5" height="8" fill="#c090c0"/><rect x="11" y="20" width="5" height="8" fill="#c090c0"/><rect x="3" y="27" width="6" height="5" fill="#9a70a0"/><rect x="11" y="27" width="6" height="5" fill="#9a70a0"/></svg>
+    <svg class="tsp tsw" width="18" height="34" viewBox="0 0 18 34"><polygon points="9,0 2,14 16,14" fill="#330088"/><rect x="0" y="12" width="18" height="4" fill="#440099"/><polygon points="9,3 10,6 13,6 11,8 12,11 9,9 6,11 7,8 5,6 8,6" fill="#fd0"/><rect x="4" y="14" width="10" height="8" fill="#fca"/><rect x="5" y="16" width="2" height="2" fill="#24c"/><rect x="11" y="16" width="2" height="2" fill="#24c"/><rect x="2" y="22" width="14" height="12" fill="#440099"/><rect x="1" y="10" width="2" height="24" fill="#8B6914"/><circle cx="2" cy="10" r="3" fill="#7700cc"/><rect x="2" y="32" width="6" height="5" fill="#330066"/><rect x="10" y="32" width="6" height="5" fill="#330066"/></svg>
+    <svg class="tsp tss" width="18" height="34" viewBox="0 0 18 34" style="transform:scaleX(-1)"><polygon points="9,0 2,14 16,14" fill="#880033"/><rect x="0" y="12" width="18" height="4" fill="#aa0044"/><polygon points="9,3 10,6 13,6 11,8 12,11 9,9 6,11 7,8 5,6 8,6" fill="#0fc"/><rect x="4" y="14" width="10" height="8" fill="#fca"/><rect x="5" y="16" width="2" height="2" fill="#c4a"/><rect x="11" y="16" width="2" height="2" fill="#c4a"/><rect x="2" y="22" width="14" height="12" fill="#880033"/><rect x="15" y="10" width="2" height="24" fill="#5a3a7a"/><rect x="2" y="32" width="6" height="5" fill="#660022"/><rect x="10" y="32" width="6" height="5" fill="#660022"/></svg>
+    <svg class="tsp tsr" width="16" height="30" viewBox="0 0 16 30"><ellipse cx="8" cy="5" rx="6" ry="5" fill="#222"/><rect x="2" y="3" width="12" height="6" fill="#333"/><rect x="4" y="5" width="8" height="5" fill="#1a1a1a"/><rect x="5" y="7" width="2" height="1" fill="#f44"/><rect x="9" y="7" width="2" height="1" fill="#f44"/><rect x="2" y="10" width="12" height="12" fill="#222"/><rect x="0" y="10" width="2" height="10" fill="#ccc"/><rect x="14" y="10" width="2" height="10" fill="#ccc"/><rect x="3" y="22" width="4" height="8" fill="#1a1a1a"/><rect x="9" y="22" width="4" height="8" fill="#1a1a1a"/><rect x="2" y="27" width="5" height="4" fill="#3a2a1a"/><rect x="9" y="27" width="5" height="4" fill="#3a2a1a"/></svg>
+    <svg class="tsp tsra" width="18" height="34" viewBox="0 0 18 34" style="transform:scaleX(-1)"><rect x="5" y="0" width="8" height="7" fill="#4a6a2a"/><rect x="3" y="2" width="12" height="5" fill="#5a7a3a"/><polygon points="9,0 5,6 13,6" fill="#3a5a1a"/><rect x="4" y="7" width="10" height="8" fill="#c96"/><rect x="5" y="8" width="8" height="6" fill="#da7"/><rect x="2" y="15" width="14" height="11" fill="#4a6a2a"/><rect x="16" y="6" width="2" height="20" fill="#8B6914"/><rect x="4" y="26" width="5" height="8" fill="#3a5a1a"/><rect x="9" y="26" width="5" height="8" fill="#3a5a1a"/><rect x="3" y="30" width="6" height="4" fill="#2a4a0a"/><rect x="9" y="30" width="6" height="4" fill="#2a4a0a"/></svg>
+  </div>
+  <div class="t-badge">Powered by Cardano · GovTools API · Anthropic</div>
+</div>
+
+<!-- ══ S2 CHAR ══ -->
+<div id="S2" class="SCR">
+  <div class="starbg" id="stC"></div>
+  <div style="position:relative;z-index:1;font-size:9px;color:#ffd700;letter-spacing:3px;margin:16px 0 4px;text-shadow:2px 2px #000">CHOOSE YOUR CHAMPION</div>
+  <div style="position:relative;z-index:1;font-size:6px;color:#8888cc;letter-spacing:2px;margin-bottom:14px">WHO VENTURES INTO THE REALM?</div>
+  <div class="cs-tabs">
+    <button class="cs-tab on" onclick="filterChar('all',this)">ALL</button>
+    <button class="cs-tab" onclick="filterChar('m',this)">MALE</button>
+    <button class="cs-tab" onclick="filterChar('f',this)">FEMALE</button>
+  </div>
+  <div class="cs-grid" id="cs-grid"></div>
+  <div class="cs-panel" id="cs-panel"><div class="cs-pe">— Select a champion to see their lore —</div></div>
+  <button class="pxbtn pulse" id="cs-confirm" style="margin-top:12px" onclick="goTo('S3')">BEGIN JOURNEY ⚔</button>
+  <div class="bklink" onclick="goTo('S1')">← Back to title</div>
+</div>
+
+<!-- ══ S3 DISTRICT ══ -->
+<div id="S3" class="SCR">
+  <div class="starbg" id="stD"></div>
+  <div class="ds-top">
+    <svg id="ds-hsv" width="28" height="42" viewBox="0 0 24 42" style="image-rendering:pixelated;flex-shrink:0"></svg>
+    <div><div class="ds-hn" id="ds-hn">HERO</div><div class="ds-hl">CHOOSE YOUR DISTRICT</div></div>
+  </div>
+  <div style="position:relative;z-index:1;font-size:9px;color:#ffd700;letter-spacing:3px;margin-bottom:4px;text-shadow:2px 2px #000">THE THREE DISTRICTS</div>
+  <div style="position:relative;z-index:1;font-size:6px;color:#8888cc;letter-spacing:2px;margin-bottom:14px">WHERE DOES YOUR QUEST BEGIN?</div>
+  <div class="ds-cards">
+    <div class="ds-card ds-c" onclick="selectDist('castle',this)">
+      <div class="ds-hdr"><div style="font-size:30px;flex-shrink:0">🏰</div><div><div class="ds-tier">⚔ TIER I — LORDS OF THE REALM</div><div class="ds-dn">CASTLE DISTRICT</div><div class="ds-rng">100M+ ADA · The mightiest DReps</div></div></div>
+      <div class="ds-scene" id="dss-c"></div>
+      <div class="ds-stats"><div class="ds-stat ds-c"><div class="ds-slbl">LORDS</div><div class="ds-sv" id="dc-cnt">...</div></div><div class="ds-stat ds-c"><div class="ds-slbl">TOTAL POWER</div><div class="ds-sv" id="dc-pow">...</div></div><div class="ds-stat ds-c"><div class="ds-slbl">DANGER</div><div class="ds-sv">★★★★★</div></div></div>
+    </div>
+    <div class="ds-card ds-m" onclick="selectDist('manor',this)">
+      <div class="ds-hdr"><div style="font-size:30px;flex-shrink:0">🏠</div><div><div class="ds-tier">🏠 TIER II — NOBLES OF THE REALM</div><div class="ds-dn">MANOR DISTRICT</div><div class="ds-rng">10M – 100M ADA · Mid-tier nobles</div></div></div>
+      <div class="ds-scene" id="dss-m"></div>
+      <div class="ds-stats"><div class="ds-stat ds-m"><div class="ds-slbl">NOBLES</div><div class="ds-sv" id="dm-cnt">...</div></div><div class="ds-stat ds-m"><div class="ds-slbl">TOTAL POWER</div><div class="ds-sv" id="dm-pow">...</div></div><div class="ds-stat ds-m"><div class="ds-slbl">DANGER</div><div class="ds-sv">★★★☆☆</div></div></div>
+    </div>
+    <div class="ds-card ds-k" onclick="selectDist('cottage',this)">
+      <div class="ds-hdr"><div style="font-size:30px;flex-shrink:0">🛖</div><div><div class="ds-tier">🛖 TIER III — FOLK OF THE REALM</div><div class="ds-dn">COTTAGE DISTRICT</div><div class="ds-rng">1M – 10M ADA · Humble representatives</div></div></div>
+      <div class="ds-scene" id="dss-k"></div>
+      <div class="ds-stats"><div class="ds-stat ds-k"><div class="ds-slbl">FOLK</div><div class="ds-sv" id="df-cnt">...</div></div><div class="ds-stat ds-k"><div class="ds-slbl">TOTAL POWER</div><div class="ds-sv" id="df-pow">...</div></div><div class="ds-stat ds-k"><div class="ds-slbl">DANGER</div><div class="ds-sv">★☆☆☆☆</div></div></div>
+    </div>
+  </div>
+  <button class="pxbtn" id="ds-enter" disabled style="margin-top:14px" onclick="enterDist()">ENTER DISTRICT ⚔</button>
+  <div class="bklink" onclick="goTo('S2')">← Back to champion select</div>
+</div>
+
+<!-- ══ S4 MAP ══ -->
+<div id="S4" class="SCR">
+  <div class="map-hud">
+    <svg id="mh-sv" width="24" height="36" viewBox="0 0 24 42" style="image-rendering:pixelated;flex-shrink:0"></svg>
+    <div><div style="font-size:6px;color:#ffd700" id="mh-name">HERO</div><div style="font-size:5px;color:#8888cc;margin-top:2px" id="mh-loc">DISTRICT</div></div>
+    <div class="hudsep"></div><div class="hudst">LORDS<span id="mh-cnt">—</span></div>
+    <div class="hudsep"></div><div class="hudst">TOTAL POWER<span id="mh-pow">—</span></div>
+    <div class="hudsep"></div><div class="hudst">TOP LORD<span id="mh-top">—</span></div>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="smbtn" onclick="refreshMap()">⟳ REFRESH</button>
+      <button class="smbtn" onclick="goTo('S3')">← DISTRICTS</button>
+    </div>
+  </div>
+  <div class="map-search">
+    <input id="map-q" type="text" placeholder="Search DRep by name..."/>
+    <button onclick="doSearch()">FIND</button>
+  </div>
+  <div class="map-area"><div class="map-inner" id="map-inner">
+    <div class="map-sky" id="map-sky"></div>
+    <div class="map-gf"></div>
+    <div class="map-bl" id="map-bl"><div style="font-size:6px;color:#444466;padding:30px;width:100%;text-align:center">Loading the district...</div></div>
+    <div class="map-gn"></div>
+    <div class="pw"><svg width="22" height="34" id="pw-sv" viewBox="0 0 24 42" style="image-rendering:pixelated"></svg></div>
+  </div></div>
+  <div class="map-panel" id="map-panel"><div class="mp-empty">— Click a building to visit that DRep —</div></div>
+</div>
+
+<!-- ══ S5 INTERIOR ══ -->
+<div id="S5" class="SCR">
+  <div class="int-hud">
+    <svg id="ih-sv" width="24" height="36" viewBox="0 0 24 42" style="image-rendering:pixelated;flex-shrink:0"></svg>
+    <div><div style="font-size:6px;color:#ffd700" id="ih-name">HERO</div><div style="font-size:5px;color:#8888cc;margin-top:2px" id="ih-loc">ROOM</div></div>
+    <div class="hudsep"></div><div class="hudst">VISITING<span id="ih-dn">—</span></div>
+    <div class="hudsep"></div><div class="hudst">POWER<span id="ih-pw">—</span></div>
+    <div style="margin-left:auto"><button class="smbtn" onclick="goTo('S4')">← EXIT</button></div>
+  </div>
+  <div class="room-wrap" id="room-wrap"></div>
+  <div class="dlg-panel">
+    <div class="dlg-in">
+      <div class="dlg-l">
+        <div class="dlg-nn" id="dp-name">—</div>
+        <div class="dlg-nt" id="dp-title">—</div>
+        <div class="dlg-nm" id="dp-meta"></div>
+      </div>
+      <div class="dlg-r">
+        <h3>SPEAK WITH THE LORD</h3>
+        <div class="dlgbox2"><div class="dlgspk" id="dp-spk">—</div><div class="dlgtxt2" id="dp-txt">Walk up and speak with the DRep...</div></div>
+        <div id="qlst" style="display:none;flex-direction:column;gap:5px">
+          <button class="qbtn" onclick="askQ(this,'intro')">▶ Who are you?</button>
+          <button class="qbtn" onclick="askQ(this,'power')">▶ How great is your power?</button>
+          <button class="qbtn" onclick="askQ(this,'creed')">▶ What is your voting creed?</button>
+          <button class="qbtn" onclick="askQ(this,'votes')">▶ Show me your vote scroll</button>
+        </div>
+      </div>
+    </div>
+    <div class="vscroll" id="int-vs" style="display:none"></div>
+  </div>
+</div>
+
+</div><!-- #G -->
+
+<script>
+/* ══════════════════════════════════════
+   LORDS OF CARDANO — COMPLETE GAME
+   API: https://be.gov.tools/drep/list
+   Tiers: Castle 100M+, Manor 10M-100M, Cottage 1M-10M
+   ══════════════════════════════════════ */
+
+const GOVTOOLS = 'https://be.gov.tools';
+const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
+
+/* ── TIER THRESHOLDS (in lovelace) ── */
+const CASTLE_MIN  = 100_000_000_000_000;  // 100M ADA
+const MANOR_MIN   =  10_000_000_000_000;  // 10M ADA
+const COTTAGE_MIN =   1_000_000_000_000;  // 1M ADA
+
+/* ── STATE ── */
+let SEL = { char:null, dist:null, drep:null };
+let SNAP = { castle:[], manor:[], cottage:[], loaded:false };
+let mapDreps = [];
+let talkDone = false;
+
+/* ── SPRITES ── */
+const SP = {
+  knight:`<rect x="5" y="0" width="9" height="10" fill="#bbb"/><rect x="2" y="3" width="16" height="8" fill="#ccc"/><rect x="5" y="7" width="9" height="3" fill="#333"/><rect x="2" y="10" width="16" height="14" fill="#aaa"/><rect x="5" y="11" width="9" height="12" fill="#bbb"/><rect x="8" y="12" width="2" height="8" fill="#c22"/><rect x="5" y="15" width="8" height="2" fill="#c22"/><rect x="-1" y="10" width="5" height="10" fill="#aaa"/><rect x="20" y="10" width="5" height="10" fill="#aaa"/><rect x="21" y="3" width="2" height="18" fill="#eee"/><rect x="19" y="10" width="7" height="2" fill="#a80"/><rect x="2" y="24" width="7" height="10" fill="#999"/><rect x="11" y="24" width="7" height="10" fill="#999"/><rect x="1" y="31" width="8" height="6" fill="#777"/><rect x="11" y="31" width="8" height="6" fill="#777"/>`,
+  paladin:`<rect x="5" y="0" width="9" height="8" fill="#d4a0d4"/><rect x="2" y="2" width="16" height="6" fill="#e8b8e8"/><rect x="3" y="6" width="14" height="4" fill="#c090c0"/><rect x="2" y="8" width="16" height="14" fill="#d4a0d4"/><rect x="5" y="9" width="9" height="12" fill="#e8b8e8"/><rect x="8" y="10" width="2" height="9" fill="#fd0"/><rect x="5" y="14" width="8" height="2" fill="#fd0"/><rect x="-1" y="8" width="5" height="10" fill="#d4a0d4"/><rect x="20" y="8" width="5" height="10" fill="#d4a0d4"/><rect x="-1" y="4" width="2" height="16" fill="#eee"/><rect x="2" y="22" width="7" height="10" fill="#c090c0"/><rect x="11" y="22" width="7" height="10" fill="#c090c0"/><rect x="1" y="29" width="8" height="7" fill="#9a70a0"/><rect x="11" y="29" width="8" height="7" fill="#9a70a0"/>`,
+  wizard:`<polygon points="12,0 3,16 21,16" fill="#330088"/><rect x="1" y="14" width="22" height="5" fill="#440099"/><polygon points="12,3 13,7 16,7 14,9 15,12 12,10 9,12 10,9 8,7 11,7" fill="#fd0"/><rect x="5" y="17" width="14" height="10" fill="#fca"/><rect x="6" y="19" width="3" height="3" fill="#24c"/><rect x="15" y="19" width="3" height="3" fill="#24c"/><rect x="5" y="25" width="14" height="4" fill="#ddd"/><rect x="2" y="26" width="20" height="14" fill="#440099"/><rect x="5" y="27" width="14" height="12" fill="#550099"/><rect x="1" y="11" width="2" height="29" fill="#8B6914"/><circle cx="2" cy="11" r="4" fill="#7700cc"/><rect x="2" y="37" width="8" height="5" fill="#330066"/><rect x="13" y="37" width="8" height="5" fill="#330066"/>`,
+  sorceress:`<polygon points="12,0 3,16 21,16" fill="#880033"/><rect x="1" y="14" width="22" height="5" fill="#aa0044"/><polygon points="12,3 13,7 16,7 14,9 15,12 12,10 9,12 10,9 8,7 11,7" fill="#0fc"/><rect x="5" y="17" width="14" height="10" fill="#fca"/><rect x="6" y="19" width="3" height="3" fill="#c4a"/><rect x="15" y="19" width="3" height="3" fill="#c4a"/><rect x="5" y="26" width="14" height="3" fill="#fac"/><rect x="2" y="26" width="20" height="14" fill="#880033"/><rect x="5" y="27" width="14" height="12" fill="#aa0044"/><rect x="20" y="11" width="2" height="29" fill="#5a3a7a"/><rect x="17" y="8" width="7" height="8" fill="#f4a" opacity=".8"/><rect x="2" y="37" width="8" height="5" fill="#660022"/><rect x="13" y="37" width="8" height="5" fill="#660022"/>`,
+  rogue:`<ellipse cx="12" cy="6" rx="8" ry="6" fill="#222"/><rect x="4" y="4" width="16" height="8" fill="#333"/><rect x="6" y="6" width="12" height="7" fill="#1a1a1a"/><rect x="7" y="9" width="3" height="2" fill="#f44"/><rect x="14" y="9" width="3" height="2" fill="#f44"/><rect x="3" y="12" width="18" height="14" fill="#222"/><rect x="6" y="13" width="12" height="12" fill="#2a2a2a"/><rect x="0" y="12" width="3" height="12" fill="#ccc"/><rect x="21" y="12" width="3" height="12" fill="#ccc"/><rect x="4" y="26" width="6" height="11" fill="#1a1a1a"/><rect x="14" y="26" width="6" height="11" fill="#1a1a1a"/><rect x="3" y="33" width="7" height="5" fill="#3a2a1a"/><rect x="14" y="33" width="7" height="5" fill="#3a2a1a"/>`,
+  ranger:`<rect x="6" y="0" width="12" height="9" fill="#4a6a2a"/><rect x="4" y="2" width="16" height="7" fill="#5a7a3a"/><polygon points="12,0 6,7 18,7" fill="#3a5a1a"/><rect x="5" y="9" width="14" height="10" fill="#c96"/><rect x="6" y="10" width="12" height="8" fill="#da7"/><rect x="7" y="11" width="3" height="3" fill="#3a2a1a"/><rect x="14" y="11" width="3" height="3" fill="#3a2a1a"/><rect x="2" y="18" width="20" height="13" fill="#4a6a2a"/><rect x="0" y="15" width="4" height="12" fill="#5a7a3a"/><rect x="20" y="15" width="4" height="12" fill="#5a7a3a"/><rect x="22" y="7" width="2" height="24" fill="#8B6914"/><rect x="5" y="31" width="7" height="10" fill="#3a5a1a"/><rect x="12" y="31" width="7" height="10" fill="#3a5a1a"/><rect x="4" y="37" width="8" height="5" fill="#2a4a0a"/><rect x="12" y="37" width="8" height="5" fill="#2a4a0a"/>`,
+};
+
+const CHARS = [
+  {id:'knight',g:'m',name:'SIR ALDRIC',cls:'KNIGHT',desc:'Stalwart defender. Charges into governance battles with shield raised and honour unwavering.',str:90,mag:20,agi:45,def:95},
+  {id:'paladin',g:'f',name:'LADY SERAPHINE',cls:'PALADIN',desc:'Blessed by Cardano light. Her divine judgment cuts through corruption with righteous fury.',str:75,mag:70,agi:50,def:80},
+  {id:'wizard',g:'m',name:'ARCHON MAEL',cls:'WIZARD',desc:'Ancient keeper of on-chain lore. Memorised every vote since the Voltaire era began.',str:20,mag:98,agi:40,def:30},
+  {id:'sorceress',g:'f',name:'VAELYRA',cls:'SORCERESS',desc:'Weaves arcane contracts from thin air. Decodes governance proposals in an instant.',str:25,mag:95,agi:70,def:25},
+  {id:'rogue',g:'m',name:'DUSK',cls:'ROGUE',desc:"Slips through halls of power unseen. Knows every DRep's secrets before they vote.",str:60,mag:35,agi:98,def:40},
+  {id:'ranger',g:'f',name:'SYLVA THORN',cls:'RANGER',desc:'Scout of the outer provinces. Tracks voting patterns from the treeline.',str:65,mag:40,agi:90,def:55},
+];
+
+/* ── HELPERS ── */
+function ada(l){ return parseInt(l||0)/1e6; }
+function fmt(l){
+  const v = ada(l);
+  if(v>=1e6) return (v/1e6).toFixed(2)+'M ₳';
+  if(v>=1e3) return Math.round(v/1e3)+'K ₳';
+  return Math.round(v)+' ₳';
+}
+function goTo(id){
+  document.querySelectorAll('.SCR').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  talkDone = false;
+  if(id==='S3') renderS3();
+  if(id==='S4') renderS4();
+}
+function mkStars(id,n){
+  const el=document.getElementById(id);
+  if(!el||el.children.length>2) return;
+  for(let i=0;i<n;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()<.15?2:1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;opacity:${.2+Math.random()*.65}`;
+    el.appendChild(s);
+  }
+}
+mkStars('stT',90);
+
+/* ── DATA LOADER ── */
+async function loadSnap(){
+  const cached = sessionStorage.getItem('loc_final');
+  if(cached){ SNAP=JSON.parse(cached); updateDistStats(); drawMiniScenes(); return; }
+
+  setLd(5,'The herald rides to gather news...');
+  try{
+    // Fetch top 100 sorted by voting power
+    const r = await fetch(`${GOVTOOLS}/drep/list?page=0&pageSize=100&sort=VotingPower&order=desc`);
+    if(!r.ok) throw new Error('API '+r.status);
+    const data = await r.json();
+    setLd(60,'Sorting the three districts...');
+
+    SNAP = { castle:[], manor:[], cottage:[], loaded:true };
+    (data.elements||[]).forEach(d=>{
+      const vp = parseInt(d.votingPower||0);
+      if(vp < COTTAGE_MIN) return; // skip under 1M
+      const entry = {
+        id: d.view || d.drepId,
+        name: d.givenName || null,
+        power: vp,
+        status: d.status,
+        objectives: d.objectives||null,
+        motivations: d.motivations||null,
+        qualifications: d.qualifications||null,
+        votesLastYear: d.votesLastYear||0,
+      };
+      if(vp >= CASTLE_MIN) SNAP.castle.push(entry);
+      else if(vp >= MANOR_MIN) SNAP.manor.push(entry);
+      else SNAP.cottage.push(entry);
+    });
+
+    sessionStorage.setItem('loc_final', JSON.stringify(SNAP));
+    setLd(100,'Kingdom data ready!');
+    updateDistStats();
+    drawMiniScenes();
+    const btn=document.getElementById('cs-confirm');
+    if(SEL.char) { btn.disabled=false; btn.classList.add('pulse'); }
+  } catch(e){
+    setLd(100,'Could not reach kingdom — '+e.message);
+    console.warn(e);
+  }
+}
+
+function setLd(pct,lbl){
+  document.getElementById('ld-in').style.width=pct+'%';
+  document.getElementById('ld-lbl').textContent=lbl;
+}
+
+function dname(d){ return d.name || (d.id?d.id.slice(0,12)+'…':'???'); }
+
+/* ── S1 ── */
+function startGame(){
+  goTo('S2');
+  mkStars('stC',60);
+  buildCharGrid();
+  document.getElementById('ld-bar-wrap').style.display='block';
+  loadSnap();
+}
+
+/* ── S2 CHAR ── */
+function sr(l,v,c){ return `<div class="cs-sr ${c}"><div class="cs-sl">${l}</div><div class="cs-bar"><div class="cs-fill" style="width:${v}%"></div></div></div>`; }
+function buildCharGrid(){
+  document.getElementById('cs-grid').innerHTML = CHARS.map(c=>`
+    <div class="cs-card" data-id="${c.id}" data-g="${c.g}" onclick="selChar('${c.id}')">
+      <svg width="44" height="66" viewBox="0 0 24 42" style="image-rendering:pixelated;margin-bottom:7px">${SP[c.id]}</svg>
+      <div class="cs-cn">${c.name}</div><div class="cs-cl">${c.cls}</div>
+      <div class="cs-stats">${sr('STR',c.str,'s-str')}${sr('MAG',c.mag,'s-mag')}${sr('AGI',c.agi,'s-agi')}${sr('DEF',c.def,'s-def')}</div>
+    </div>`).join('');
+}
+function filterChar(g,btn){
+  document.querySelectorAll('.cs-tab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
+  document.querySelectorAll('.cs-card').forEach(c=>c.classList.toggle('hid',g!=='all'&&c.dataset.g!==g));
+}
+function selChar(id){
+  SEL.char=CHARS.find(c=>c.id===id);
+  document.querySelectorAll('.cs-card').forEach(c=>c.classList.remove('sel'));
+  document.querySelector(`.cs-card[data-id="${id}"]`).classList.add('sel');
+  document.getElementById('cs-panel').innerHTML=`<svg width="44" height="58" viewBox="0 0 24 42" style="image-rendering:pixelated;flex-shrink:0">${SP[id]}</svg><div><div class="cs-pn">${SEL.char.name}</div><div class="cs-pd">${SEL.char.desc}</div></div>`;
+  if(SNAP.loaded){ const btn=document.getElementById('cs-confirm');btn.disabled=false;btn.classList.add('pulse'); }
+}
+
+/* ── S3 DISTRICT ── */
+function updateDistStats(){
+  const c=SNAP.castle,m=SNAP.manor,k=SNAP.cottage;
+  document.getElementById('dc-cnt').textContent=c.length||'0';
+  document.getElementById('dm-cnt').textContent=m.length||'0';
+  document.getElementById('df-cnt').textContent=k.length||'0';
+  document.getElementById('dc-pow').textContent=c.length?fmt(c.reduce((a,d)=>a+d.power,0)):'0';
+  document.getElementById('dm-pow').textContent=m.length?fmt(m.reduce((a,d)=>a+d.power,0)):'0';
+  document.getElementById('df-pow').textContent=k.length?fmt(k.reduce((a,d)=>a+d.power,0)):'0';
+}
+function drawMiniScenes(){
+  miniScene('dss-c',SNAP.castle,'#0a0800','#ffd700');
+  miniScene('dss-m',SNAP.manor,'#060810','#7070cc');
+  miniScene('dss-k',SNAP.cottage,'#080600','#8B6914');
+}
+function miniScene(elId,dreps,bg,col){
+  const el=document.getElementById(elId); if(!el) return;
+  const list=dreps.slice(0,8);
+  if(!list.length){ el.innerHTML=`<svg width="100%" height="70" viewBox="0 0 660 70"><rect width="660" height="70" fill="${bg}"/><text x="330" y="38" text-anchor="middle" fill="#333" font-size="10" font-family="monospace">Loading...</text></svg>`; return; }
+  const maxP=Math.max(...list.map(d=>d.power)),minP=Math.min(...list.map(d=>d.power)),range=maxP-minP||1;
+  const sp=Math.floor(660/(list.length+1));
+  let svg=`<svg width="100%" height="70" viewBox="0 0 660 70" preserveAspectRatio="none"><rect width="660" height="70" fill="${bg}"/>`;
+  for(let i=0;i<8;i++) svg+=`<rect x="${Math.random()*660|0}" y="${Math.random()*18|0}" width="1" height="1" fill="#fffacc" opacity="${.3+Math.random()*.4}"/>`;
+  svg+=`<rect x="0" y="62" width="660" height="8" fill="#111400"/><rect x="0" y="60" width="660" height="3" fill="#1a2000"/>`;
+  list.forEach((d,i)=>{
+    const x=sp*(i+1),ratio=(d.power-minP)/range;
+    const h=Math.round(12+ratio*42),w=Math.round(9+ratio*14),y=60-h;
+    svg+=`<rect x="${x-w/2|0}" y="${y}" width="${w}" height="${h}" fill="${col}" opacity=".75" stroke="#000" stroke-width=".5"/>`;
+    svg+=`<rect x="${x-w/2|0}" y="${y-4}" width="${Math.round(w*.4)}" height="5" fill="${col}" opacity=".75"/>`;
+    svg+=`<rect x="${(x+w/2-Math.round(w*.4))|0}" y="${y-4}" width="${Math.round(w*.4)}" height="5" fill="${col}" opacity=".75"/>`;
+  });
+  svg+=`</svg>`; el.innerHTML=svg;
+}
+function renderS3(){
+  mkStars('stD',50);
+  document.getElementById('ds-hn').textContent=SEL.char?.name||'HERO';
+  document.getElementById('ds-hsv').innerHTML=SP[SEL.char?.id||'knight'];
+  if(SNAP.loaded){ updateDistStats(); drawMiniScenes(); }
+}
+function selectDist(d,el){
+  SEL.dist=d;
+  document.querySelectorAll('.ds-card').forEach(c=>c.classList.remove('ds-sel-c','ds-sel-m','ds-sel-k'));
+  el.classList.add({castle:'ds-sel-c',manor:'ds-sel-m',cottage:'ds-sel-k'}[d]);
+  const btn=document.getElementById('ds-enter');btn.disabled=false;btn.classList.add('pulse');
+  btn.textContent={castle:'ENTER CASTLE DISTRICT ⚔',manor:'ENTER MANOR DISTRICT ⚔',cottage:'ENTER COTTAGE DISTRICT ⚔'}[d];
+}
+function enterDist(){ if(SEL.dist) goTo('S4'); }
+
+/* ── S4 MAP ── */
+const PAL=[
+  {w:'#5a4a3a',w2:'#6a5a4a',sp:'#7a6a5a',fl:'#cc2200'},
+  {w:'#3a4a5a',w2:'#4a5a6a',sp:'#5a6a7a',fl:'#0044cc'},
+  {w:'#4a3a5a',w2:'#5a4a6a',sp:'#6a5a7a',fl:'#aa22cc'},
+  {w:'#3a5a3a',w2:'#4a6a4a',sp:'#5a7a5a',fl:'#22aa22'},
+  {w:'#5a3a3a',w2:'#6a4a4a',sp:'#7a5a5a',fl:'#cc4400'},
+];
+function renderS4(){
+  const tier=SEL.dist||'castle';
+  mapDreps=[...SNAP[tier]];
+  document.getElementById('mh-name').textContent=SEL.char?.name||'HERO';
+  document.getElementById('mh-loc').textContent={castle:'⚔ CASTLE DISTRICT',manor:'🏠 MANOR DISTRICT',cottage:'🛖 COTTAGE DISTRICT'}[tier];
+  document.getElementById('mh-sv').innerHTML=SP[SEL.char?.id||'knight'];
+  document.getElementById('pw-sv').innerHTML=SP[SEL.char?.id||'knight'];
+  document.getElementById('mh-cnt').textContent=mapDreps.length;
+  document.getElementById('mh-pow').textContent=fmt(mapDreps.reduce((a,d)=>a+d.power,0));
+  document.getElementById('mh-top').textContent=mapDreps[0]?dname(mapDreps[0]):'—';
+  document.getElementById('map-panel').innerHTML='<div class="mp-empty">— Click a building to visit that DRep —</div>';
+  buildSky(); renderBuildings(mapDreps);
+}
+function buildSky(){
+  const sky=document.getElementById('map-sky');sky.innerHTML='';
+  for(let i=0;i<32;i++){const s=document.createElement('div');s.style.cssText=`position:absolute;width:${Math.random()<.2?2:1}px;height:${Math.random()<.2?2:1}px;background:#fffacc;top:${Math.random()*60}%;left:${Math.random()*100}%;opacity:${.2+Math.random()*.55};border-radius:50%`;sky.appendChild(s);}
+  sky.innerHTML+=`<svg style="position:absolute;top:8px;right:44px" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#fffacc" stroke="#e8e090" stroke-width="1"/><circle cx="11" cy="10" r="2.5" fill="#e8e090" opacity=".5"/><circle cx="20" cy="18" r="1.8" fill="#e8e090" opacity=".4"/></svg>`;
+}
+
+function castleSVG(w,h,idx){
+  const p=PAL[idx%5];
+  const bx=Math.round(w*.12),bw=Math.round(w*.76),bh=Math.round(h*.5),by=h-bh;
+  const tw=Math.round(w*.22),tH=Math.round(h*.72),ty=h-tH;
+  const sw=Math.round(w*.28),sx=Math.round((w-sw)/2);
+  const bmH=8,bmW=Math.max(5,Math.round(tw*.38));
+  const ww=Math.max(5,Math.round(sw*.28)),wh=Math.max(6,Math.round(h*.055));
+  const dw=Math.round(sw*.44),dh=Math.round(h*.19),dx=sx+Math.round((sw-dw)/2);
+  let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="image-rendering:pixelated;display:block">`;
+  s+=`<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="${p.w}" stroke="#2a1a0a" stroke-width="1"/>`;
+  const nb=Math.max(2,Math.floor(bw/18)),bs=Math.floor(bw/nb);
+  for(let i=0;i<nb;i+=2)s+=`<rect x="${bx+i*bs}" y="${by-bmH}" width="${bs-2}" height="${bmH+2}" fill="${p.w}" stroke="#2a1a0a" stroke-width="1"/>`;
+  s+=`<rect x="0" y="${ty}" width="${tw}" height="${tH}" fill="${p.w2}" stroke="#2a1a0a" stroke-width="1"/>`;
+  s+=`<rect x="0" y="${ty-bmH}" width="${bmW}" height="${bmH+2}" fill="${p.w2}" stroke="#2a1a0a" stroke-width="1"/>`;
+  s+=`<rect x="${tw-bmW}" y="${ty-bmH}" width="${bmW}" height="${bmH+2}" fill="${p.w2}" stroke="#2a1a0a" stroke-width="1"/>`;
+  s+=`<rect x="${w-tw}" y="${ty}" width="${tw}" height="${tH}" fill="${p.w2}" stroke="#2a1a0a" stroke-width="1"/>`;
+  s+=`<rect x="${w-tw}" y="${ty-bmH}" width="${bmW}" height="${bmH+2}" fill="${p.w2}" stroke="#2a1a0a" stroke-width="1"/>`;
+  s+=`<rect x="${w-bmW}" y="${ty-bmH}" width="${bmW}" height="${bmH+2}" fill="${p.w2}" stroke="#2a1a0a" stroke-width="1"/>`;
+  s+=`<rect x="${sx}" y="0" width="${sw}" height="${h}" fill="${p.sp}" stroke="#2a1a0a" stroke-width="1"/>`;
+  s+=`<rect x="${sx}" y="${-bmH}" width="${bmW}" height="${bmH+2}" fill="${p.sp}" stroke="#2a1a0a" stroke-width="1"/>`;
+  s+=`<rect x="${sx+sw-bmW}" y="${-bmH}" width="${bmW}" height="${bmH+2}" fill="${p.sp}" stroke="#2a1a0a" stroke-width="1"/>`;
+  const fx=sx+Math.round(sw/2);
+  s+=`<rect x="${fx}" y="-16" width="2" height="16" fill="#9a9a9a"/>`;
+  s+=`<polygon points="${fx+2},-16 ${fx+14},-12 ${fx+2},-8" fill="${p.fl}"/>`;
+  const nw=Math.max(2,Math.round(h/36)),wsp=Math.round(h/(nw+1));
+  for(let i=1;i<=nw;i++){const wy=i*wsp-Math.round(wh/2),wx=sx+Math.round((sw-ww)/2);s+=`<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" fill="#1a1a3a"/>`;s+=`<rect x="${wx+1}" y="${wy+1}" width="${Math.round(ww*.35)}" height="${wh-2}" fill="#2a2a5a"/>`;}
+  s+=`<rect x="${dx}" y="${h-dh}" width="${dw}" height="${dh}" rx="2" fill="#1a0a00"/>`;
+  const ty2=Math.round(h*.52);
+  s+=`<rect x="${bx+4}" y="${ty2}" width="3" height="6" fill="#8a7a5a"/>`;s+=`<rect x="${bx+3}" y="${ty2-5}" width="5" height="5" fill="#ff8800" class="tf"/>`;
+  s+=`<rect x="${bx+bw-7}" y="${ty2}" width="3" height="6" fill="#8a7a5a"/>`;s+=`<rect x="${bx+bw-8}" y="${ty2-5}" width="5" height="5" fill="#ff8800" class="tf"/>`;
+  s+=`</svg>`;return s;
+}
+function manorSVG(w,h,idx){
+  const col=['#4a5a6a','#4a6a5a','#5a5a4a','#3a5a6a'][idx%4];
+  const by=Math.round(h*.36),bh=h-by,bx=Math.round(w*.06),bw=Math.round(w*.88);
+  let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="image-rendering:pixelated;display:block">`;
+  s+=`<polygon points="${bx-4},${by+8} ${w/2},${Math.round(h*.05)} ${bx+bw+4},${by+8}" fill="#3a2a4a" stroke="#2a1a3a" stroke-width="1"/>`;
+  s+=`<rect x="${bx}" y="${by+6}" width="${bw}" height="${bh-6}" fill="${col}" stroke="#2a3a4a" stroke-width="1"/>`;
+  const cx2=Math.round(w*.65),cy2=Math.round(h*.05)-Math.round(h*.2);
+  s+=`<rect x="${cx2}" y="${cy2}" width="6" height="${Math.round(h*.2)+10}" fill="#3a2a4a"/>`;
+  const ww2=Math.round(bw*.22),wh2=Math.round(h*.14),wy2=by+Math.round(bh*.2);
+  s+=`<rect x="${bx+Math.round(bw*.08)}" y="${wy2}" width="${ww2}" height="${wh2}" rx="1" fill="#1a1a3a"/>`;
+  s+=`<rect x="${bx+bw-Math.round(bw*.08)-ww2}" y="${wy2}" width="${ww2}" height="${wh2}" rx="1" fill="#1a1a3a"/>`;
+  const dw2=Math.round(bw*.28),dh2=Math.round(bh*.52),dx2=bx+Math.round((bw-dw2)/2);
+  s+=`<rect x="${dx2}" y="${h-dh2}" width="${dw2}" height="${dh2}" rx="1" fill="#2a1a00"/>`;
+  s+=`<rect x="${Math.round(w/2)}" y="${Math.round(h*.05)-8}" width="1" height="10" fill="#6a5a4a"/>`;
+  s+=`<polygon points="${Math.round(w/2)+1},${Math.round(h*.05)-8} ${Math.round(w/2)+11},${Math.round(h*.05)-5} ${Math.round(w/2)+1},${Math.round(h*.05)-2}" fill="#0044cc"/>`;
+  s+=`<rect x="${bx+5}" y="${by+Math.round(bh*.38)}" width="2" height="5" fill="#8a7a5a"/>`;
+  s+=`<rect x="${bx+4}" y="${by+Math.round(bh*.38)-4}" width="4" height="4" fill="#ff8800" class="tf"/>`;
+  s+=`</svg>`;return s;
+}
+function cottageSVG(w,h,idx){
+  const col=['#5a4a3a','#4a5a3a','#5a3a4a'][idx%3];
+  const by=Math.round(h*.42),bh=h-by,bx=Math.round(w*.08),bw=Math.round(w*.84);
+  let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="image-rendering:pixelated;display:block">`;
+  s+=`<polygon points="${bx-4},${by+8} ${w/2},${Math.round(h*.08)} ${bx+bw+4},${by+8}" fill="#2a2a1a" stroke="#1a1a0a" stroke-width="1"/>`;
+  const cx3=Math.round(w*.6),ch2=Math.round(h*.22);
+  s+=`<rect x="${cx3}" y="${Math.round(h*.08)-ch2+8}" width="5" height="${ch2}" fill="#222"/>`;
+  s+=`<rect x="${bx}" y="${by+6}" width="${bw}" height="${bh-6}" fill="${col}" stroke="#2a2a1a" stroke-width="1"/>`;
+  const ww3=Math.round(bw*.24),wh3=Math.round(h*.17),wy3=by+Math.round(bh*.2);
+  s+=`<rect x="${bx+Math.round(bw*.08)}" y="${wy3}" width="${ww3}" height="${wh3}" rx="1" fill="#1a1a3a"/>`;
+  s+=`<rect x="${bx+bw-Math.round(bw*.08)-ww3}" y="${wy3}" width="${ww3}" height="${wh3}" rx="1" fill="#1a1a3a"/>`;
+  const dw3=Math.round(bw*.32),dh3=Math.round(bh*.55),dx3=bx+Math.round((bw-dw3)/2);
+  s+=`<rect x="${dx3}" y="${h-dh3}" width="${dw3}" height="${dh3}" rx="1" fill="#2a1a00"/>`;
+  s+=`</svg>`;return s;
+}
+function getBldg(tier,w,h,i){
+  if(tier==='castle') return castleSVG(w,h,i);
+  if(tier==='manor')  return manorSVG(w,h,i);
+  return cottageSVG(w,h,i);
+}
+
+function renderBuildings(dreps){
+  const layer=document.getElementById('map-bl'),inner=document.getElementById('map-inner');
+  if(!dreps.length){layer.innerHTML='<div style="font-size:6px;color:#444466;padding:30px;width:100%;text-align:center">No DReps found in this district</div>';return;}
+  const tier=SEL.dist||'castle';
+  const maxP=Math.max(...dreps.map(d=>d.power)),minP=Math.min(...dreps.map(d=>d.power)),range=maxP-minP||1;
+  /* Height/width ranges per tier — district-relative scaling */
+  const HR={castle:[100,240],manor:[72,168],cottage:[44,96]};
+  const WR={castle:[66,104],manor:[52,86],cottage:[36,62]};
+  const [hMin,hMax]=HR[tier],[wMin,wMax]=WR[tier];
+  const slotW=Math.max(104,Math.floor(700/Math.min(dreps.length,7)));
+  layer.innerHTML='';
+  dreps.forEach((d,i)=>{
+    const ratio=(d.power-minP)/range;
+    const h=Math.round(hMin+ratio*(hMax-hMin));
+    const w=Math.round(wMin+ratio*(wMax-wMin));
+    const slot=document.createElement('div');
+    slot.className='d-slot';slot.dataset.id=d.id;slot.style.width=slotW+'px';
+    slot.onclick=()=>clickBuilding(d.id);
+    slot.innerHTML=`<div class="d-lbl" title="${d.id}">${dname(d)}</div><div class="d-pow">${fmt(d.power)}</div>${getBldg(tier,w,h,i)}`;
+    layer.appendChild(slot);
+  });
+  const totalW=dreps.length*slotW+40;
+  inner.style.width=totalW>680?totalW+'px':'100%';
+}
+
+function clickBuilding(id){
+  document.querySelectorAll('.d-slot').forEach(s=>s.classList.remove('hl'));
+  document.querySelector(`.d-slot[data-id="${id}"]`)?.classList.add('hl');
+  const tier=SEL.dist||'castle';
+  const d=[...SNAP.castle,...SNAP.manor,...SNAP.cottage].find(x=>x.id===id);
+  if(!d)return;
+  SEL.drep=d;
+  const icon={castle:'🏰',manor:'🏠',cottage:'🛖'}[tier];
+  const title={castle:'Grand Lord',manor:'Noble',cottage:'Village Elder'}[tier];
+  const yv=d.votesLastYear;
+  document.getElementById('map-panel').innerHTML=`
+    <div class="mp-in">
+      <div class="mp-l">
+        <div class="mp-dn">${icon} ${dname(d)}</div>
+        <div class="mp-pw">${fmt(d.power)}</div>
+        <div class="mp-mt">Title: ${title}<br>Status: ${d.status||'Active'}<br>Votes last year: <span style="color:#7aff7a">${yv}</span></div>
+      </div>
+      <div class="mp-r">
+        <h3>APPROACH THE DWELLING</h3>
+        <div class="dlgbox"><div class="dlgtxt">"${SEL.char?.name||'Adventurer'}, I see you approach my ${tier}. Do you wish to enter and speak with me?"</div></div>
+        <button class="qbtn" style="font-size:6px;padding:10px;border-color:#ffd700;color:#ffd700" onclick="goToInterior()">⚔ ENTER THE ${title.toUpperCase()}'S DWELLING</button>
+      </div>
+    </div>`;
+}
+
+function doSearch(){
+  const q=document.getElementById('map-q').value.trim().toLowerCase();
+  if(!q){renderBuildings(mapDreps);return;}
+  const f=mapDreps.filter(d=>(d.id||'').toLowerCase().includes(q)||(d.name||'').toLowerCase().includes(q));
+  renderBuildings(f.length?f:mapDreps);
+  if(f.length===1) setTimeout(()=>clickBuilding(f[0].id),400);
+}
+
+async function refreshMap(){
+  sessionStorage.removeItem('loc_final');
+  SNAP={castle:[],manor:[],cottage:[],loaded:false};
+  document.getElementById('map-bl').innerHTML='<div style="font-size:6px;color:#444466;padding:30px;width:100%;text-align:center">Refreshing kingdom data...</div>';
+  document.getElementById('map-panel').innerHTML='<div class="mp-empty">— Click a building to visit that DRep —</div>';
+  await loadSnap();
+  mapDreps=[...SNAP[SEL.dist||'castle']];
+  document.getElementById('mh-cnt').textContent=mapDreps.length;
+  document.getElementById('mh-pow').textContent=fmt(mapDreps.reduce((a,d)=>a+d.power,0));
+  renderBuildings(mapDreps);
+}
+
+/* ── S5 INTERIOR ── */
+function goToInterior(){ goTo('S5'); buildRoom(); }
+
+function buildRoom(){
+  const tier=SEL.dist||'castle';
+  const d=SEL.drep;
+  const hid=SEL.char?.id||'knight';
+  const hname=SEL.char?.name||'ADVENTURER';
+  const title={castle:'Grand Lord',manor:'Noble',cottage:'Village Elder'}[tier];
+  const icon={castle:'🏰',manor:'🏠',cottage:'🛖'}[tier];
+  document.getElementById('ih-sv').innerHTML=SP[hid];
+  document.getElementById('ih-name').textContent=hname;
+  document.getElementById('ih-loc').textContent={castle:'🏰 THRONE ROOM',manor:'🏠 THE STUDY',cottage:'🛖 COTTAGE KITCHEN'}[tier];
+  document.getElementById('ih-dn').textContent=(dname(d)).slice(0,14);
+  document.getElementById('ih-pw').textContent=fmt(d.power||0);
+  document.getElementById('dp-name').textContent=dname(d);
+  document.getElementById('dp-title').textContent=title+' of Cardano';
+  document.getElementById('dp-meta').innerHTML=`Power: <span style="color:#7aff7a">${fmt(d.power)}</span><br>Votes/yr: ${d.votesLastYear||0}`;
+  document.getElementById('dp-spk').textContent=icon+' The '+title+' speaks:';
+  document.getElementById('dp-txt').textContent='Walk up and click the DRep to speak...';
+  document.getElementById('qlst').style.display='none';
+  document.getElementById('int-vs').style.display='none';
+  drawInteriorRoom(tier);
+}
+
+function drawInteriorRoom(tier){
+  const wrap=document.getElementById('room-wrap');
+  const W=Math.min(680,wrap.offsetWidth||680),H=230;
+  wrap.style.height=H+'px';
+  const fY=H-70;
+  let room='',npc;
+  if(tier==='castle'){room=throneRoom(W,H,fY);npc=throneNPC(W,H,fY);}
+  else if(tier==='manor'){room=studyRoom(W,H,fY);npc=studyNPC(W,H,fY);}
+  else{room=cottageRoom(W,H,fY);npc=cottageNPC(W,H,fY);}
+
+  wrap.innerHTML=`
+    <div class="enter-ov" id="eov"></div>
+    <div style="position:relative;width:${W}px;height:${H}px;overflow:hidden">
+      ${room}
+      <svg style="position:absolute;top:0;left:0;image-rendering:pixelated;pointer-events:none" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${npc.svg}</svg>
+      <div class="npc-hit" id="nhb" style="left:${npc.x-npc.w/2}px;top:${npc.y}px;width:${npc.w}px;height:${npc.h}px" onclick="talkNPC()"></div>
+      <div class="int-prompt" id="ipr" style="left:${npc.x-36}px;top:${npc.y-22}px;display:none">▲ TALK</div>
+      <div id="plr" style="position:absolute;bottom:70px;left:2%;z-index:10;image-rendering:pixelated">
+        <svg width="24" height="38" viewBox="0 0 24 42" style="image-rendering:pixelated;animation:idle .5s steps(1) infinite">${SP[SEL.char?.id||'knight']}</svg>
+      </div>
+    </div>`;
+
+  setTimeout(()=>{const o=document.getElementById('eov');if(o){o.classList.add('fade');setTimeout(()=>o.remove(),900);}},120);
+  const pl=document.getElementById('plr');
+  const tgt=Math.max(8,Math.round((npc.x/W)*100)-12);
+  pl.style.transition='left 2.4s ease-out';
+  setTimeout(()=>{pl.style.left=tgt+'%';setTimeout(()=>{const pr=document.getElementById('ipr');if(pr)pr.style.display='block';},2600);},200);
+}
+
+function throneRoom(W,H,fY){
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;image-rendering:pixelated">`;
+  s+=`<rect width="${W}" height="${fY}" fill="#2a1a1a"/>`;
+  for(let r=0;r<5;r++)for(let c=0;c<Math.ceil(W/60);c++){const ox=(r%2)*30;s+=`<rect x="${c*60+ox}" y="${r*36}" width="58" height="34" fill="none" stroke="#3a2828" stroke-width="1" opacity=".5"/>`;}
+  s+=`<polygon points="${W*.38},${fY} ${W*.62},${fY} ${W*.72},${H} ${W*.28},${H}" fill="#8a0000"/>`;
+  s+=`<polygon points="${W*.41},${fY} ${W*.59},${fY} ${W*.67},${H} ${W*.33},${H}" fill="#aa0000"/>`;
+  s+=`<polygon points="${W*.38},${fY} ${W*.62},${fY} ${W*.72},${H} ${W*.28},${H}" fill="none" stroke="#ffd700" stroke-width="2"/>`;
+  const tw=Math.round(W/10);
+  for(let c=0;c<12;c++){s+=`<rect x="${c*tw}" y="${fY}" width="${tw}" height="70" fill="${c%2===0?'#3a2a1a':'#2a1a0a'}"/>`;s+=`<rect x="${c*tw}" y="${fY}" width="${tw}" height="70" fill="none" stroke="#1a0a00" stroke-width="1"/>`;}
+  [[W*.12,fY-130],[W*.88,fY-130],[W*.22,fY-105],[W*.78,fY-105]].forEach(([px,py])=>{s+=`<rect x="${px-11}" y="${py}" width="22" height="${H-py}" fill="#4a3a2a" stroke="#2a1a0a" stroke-width="1"/>`;});
+  [[W*.08,fY-75],[W*.92,fY-75],[W*.18,fY-58],[W*.82,fY-58]].forEach(([tx,ty])=>{s+=`<rect x="${tx-2}" y="${ty}" width="4" height="10" fill="#8a7a5a"/>`;s+=`<rect x="${tx-4}" y="${ty-8}" width="8" height="8" fill="#ff8800" class="tf"/>`;});
+  [[W*.08,28],[W*.92,28]].forEach(([bx,by])=>{s+=`<rect x="${bx-9}" y="${by}" width="18" height="46" fill="#8a0000" stroke="#ffd700" stroke-width="1"/>`;s+=`<polygon points="${bx-9},${by+46} ${bx},${by+56} ${bx+9},${by+46}" fill="#8a0000" stroke="#ffd700" stroke-width="1"/>`;s+=`<rect x="${bx-5}" y="${by+11}" width="10" height="2" fill="#ffd700"/>`;s+=`<rect x="${bx-2}" y="${by+7}" width="2" height="10" fill="#ffd700"/>`;});
+  s+=`<rect x="${W*.37}" y="${fY-18}" width="${W*.26}" height="18" fill="#5a3a1a" stroke="#3a2a0a" stroke-width="2"/>`;
+  s+=`<rect x="${W*.39}" y="${fY-20}" width="${W*.22}" height="4" fill="#ffd700"/>`;
+  s+=`<rect x="${W/2-22}" y="18" width="44" height="64" rx="4" fill="#1a2a4a"/>`;s+=`<rect x="${W/2-18}" y="22" width="36" height="56" rx="3" fill="#2a3a5a"/>`;s+=`<rect x="${W/2-2}" y="22" width="4" height="56" fill="#1a2a4a"/>`;s+=`<rect x="${W/2-18}" y="50" width="36" height="4" fill="#1a2a4a"/>`;
+  s+=`</svg>`;return s;
+}
+function studyRoom(W,H,fY){
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;image-rendering:pixelated">`;
+  s+=`<rect width="${W}" height="${fY}" fill="#1a1a2a"/>`;
+  s+=`<rect x="0" y="18" width="106" height="${fY-18}" fill="#3a2a1a" stroke="#2a1a0a" stroke-width="2"/>`;
+  for(let r=0;r<6;r++){for(let c=0;c<5;c++){const bc=['#cc2200','#0044cc','#007700','#884400','#550088','#cc8800'][Math.floor(Math.random()*6)];s+=`<rect x="${4+c*20}" y="${26+r*32}" width="17" height="26" fill="${bc}"/>`;} s+=`<rect x="2" y="${22+r*32+26}" width="102" height="4" fill="#2a1a0a"/>`;}
+  s+=`<rect x="${W-106}" y="${fY-116}" width="96" height="116" fill="#3a2a1a" stroke="#2a1a0a" stroke-width="2"/>`;s+=`<rect x="${W-96}" y="${fY-106}" width="76" height="106" fill="#1a0a00"/>`;s+=`<rect x="${W-86}" y="${fY-32}" width="56" height="32" fill="#ff6600" class="tf"/>`;s+=`<rect x="${W-108}" y="${fY-124}" width="100" height="12" fill="#4a3a2a" stroke="#2a1a0a" stroke-width="1"/>`;
+  for(let c=0;c<Math.ceil(W/48);c++){s+=`<rect x="${c*48}" y="${fY}" width="46" height="70" fill="${c%2===0?'#3a2a1a':'#2a1a0a'}"/>`;s+=`<rect x="${c*48}" y="${fY}" width="46" height="70" fill="none" stroke="#1a0a00" stroke-width="1"/>`;}
+  s+=`<ellipse cx="${W*.5}" cy="${fY+38}" rx="${W*.26}" ry="26" fill="#553300" stroke="#884400" stroke-width="2"/>`;
+  s+=`</svg>`;return s;
+}
+function cottageRoom(W,H,fY){
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;image-rendering:pixelated">`;
+  s+=`<rect width="${W}" height="${fY}" fill="#2a1e12"/>`;
+  s+=`<rect x="38" y="28" width="68" height="52" rx="4" fill="#1a2a3a" stroke="#5a4a2a" stroke-width="3"/>`;s+=`<rect x="72" y="28" width="2" height="52" fill="#5a4a2a"/>`;s+=`<rect x="38" y="54" width="68" height="2" fill="#5a4a2a"/>`;s+=`<rect x="38" y="28" width="17" height="52" fill="#8a2200" opacity=".65"/>`;s+=`<rect x="89" y="28" width="17" height="52" fill="#8a2200" opacity=".65"/>`;
+  s+=`<rect x="${W-106}" y="28" width="68" height="52" rx="4" fill="#1a2a3a" stroke="#5a4a2a" stroke-width="3"/>`;s+=`<rect x="${W-106}" y="28" width="17" height="52" fill="#8a2200" opacity=".65"/>`;s+=`<rect x="${W-55}" y="28" width="17" height="52" fill="#8a2200" opacity=".65"/>`;
+  s+=`<rect x="0" y="${fY-106}" width="76" height="106" fill="#3a2a1a" stroke="#2a1a0a" stroke-width="2"/>`;s+=`<rect x="8" y="${fY-96}" width="60" height="96" fill="#1a0a00"/>`;s+=`<rect x="14" y="${fY-32}" width="50" height="32" fill="#ff5500" class="tf"/>`;s+=`<rect x="22" y="${fY-44}" width="34" height="16" fill="#ff7700" class="tf"/>`;s+=`<rect x="-2" y="${fY-114}" width="80" height="12" fill="#4a3a2a" stroke="#2a1a0a" stroke-width="1"/>`;
+  for(let r=0;r<3;r++)for(let c=0;c<Math.ceil(W/68);c++){const fx=c*68+(r%2)*34,fy=fY+r*22;s+=`<rect x="${fx}" y="${fy}" width="66" height="20" fill="${(c+r)%2===0?'#4a3a2a':'#3a2a1a'}" stroke="#2a1a0a" stroke-width="1"/>`;}
+  const tx=W*.30,tw=W*.40,ty2=fY-40;
+  s+=`<rect x="${tx}" y="${ty2}" width="${tw}" height="13" fill="#5a3a1a" stroke="#3a1a00" stroke-width="2"/>`;s+=`<rect x="${tx+5}" y="${ty2+13}" width="8" height="27" fill="#4a2a0a"/>`;s+=`<rect x="${tx+tw-13}" y="${ty2+13}" width="8" height="27" fill="#4a2a0a"/>`;
+  s+=`<ellipse cx="${tx+tw*.2}" cy="${ty2+4}" rx="11" ry="7" fill="#cc8844"/>`;s+=`<ellipse cx="${tx+tw*.5}" cy="${ty2+3}" rx="13" ry="8" fill="#5a8a3a"/>`;
+  s+=`<rect x="${tx+tw*.62}" y="${ty2-7}" width="5" height="13" fill="#ccccaa"/>`;s+=`<ellipse cx="${tx+tw*.645}" cy="${ty2-9}" rx="4" ry="3" fill="#ff6600" class="tf" opacity=".9"/>`;
+  [[W*.42,0],[W*.55,0],[W*.66,0]].forEach(([hx])=>{s+=`<rect x="${hx}" y="0" width="2" height="32" fill="#6a5a3a"/>`;s+=`<ellipse cx="${hx+1}" cy="36" rx="5" ry="7" fill="#4a6a2a"/>`;});
+  s+=`</svg>`;return s;
+}
+
+function throneNPC(W,H,fY){
+  const tx=W*.5,ty=fY-18;let s='';
+  s+=`<rect x="${tx-26}" y="${ty-76}" width="52" height="96" fill="#4a3a1a" stroke="#ffd700" stroke-width="2"/>`;
+  s+=`<rect x="${tx-30}" y="${ty-80}" width="60" height="10" fill="#5a4a2a" stroke="#ffd700" stroke-width="2"/>`;
+  s+=`<rect x="${tx-20}" y="${ty-80}" width="9" height="28" fill="#6a5a3a" stroke="#ffd700" stroke-width="1"/>`;s+=`<rect x="${tx+11}" y="${ty-80}" width="9" height="28" fill="#6a5a3a" stroke="#ffd700" stroke-width="1"/>`;
+  s+=`<rect x="${tx-26}" y="${ty+12}" width="12" height="6" fill="#4a3a1a"/>`;s+=`<rect x="${tx+14}" y="${ty+12}" width="12" height="6" fill="#4a3a1a"/>`;
+  s+=`<polygon points="${tx-18},${ty-86} ${tx},${ty-100} ${tx+18},${ty-86}" fill="#ffd700"/>`;
+  s+=`<rect x="${tx-14}" y="${ty-58}" width="28" height="68" fill="#4a0088"/>`;s+=`<rect x="${tx-9}" y="${ty-56}" width="18" height="66" fill="#6600aa"/>`;
+  s+=`<rect x="${tx-26}" y="${ty-40}" width="10" height="7" fill="#4a0088"/>`;s+=`<rect x="${tx+16}" y="${ty-40}" width="10" height="7" fill="#4a0088"/>`;
+  s+=`<rect x="${tx-28}" y="${ty-44}" width="7" height="7" fill="#fca"/>`;s+=`<rect x="${tx+21}" y="${ty-44}" width="7" height="7" fill="#fca"/>`;
+  s+=`<rect x="${tx-10}" y="${ty-76}" width="20" height="20" fill="#fca"/>`;
+  s+=`<rect x="${tx-8}" y="${ty-70}" width="3" height="3" fill="#24c"/>`;s+=`<rect x="${tx+5}" y="${ty-70}" width="3" height="3" fill="#24c"/>`;s+=`<rect x="${tx-5}" y="${ty-63}" width="10" height="2" fill="#c86"/>`;
+  s+=`<rect x="${tx-12}" y="${ty-82}" width="24" height="8" fill="#ffd700"/>`;
+  s+=`<polygon points="${tx-8},${ty-82} ${tx-8},${ty-90} ${tx-3},${ty-82}" fill="#ffd700"/>`;s+=`<polygon points="${tx-1},${ty-82} ${tx},${ty-94} ${tx+1},${ty-82}" fill="#ffd700"/>`;s+=`<polygon points="${tx+3},${ty-82} ${tx+8},${ty-90} ${tx+8},${ty-82}" fill="#ffd700"/>`;
+  s+=`<circle cx="${tx-5}" cy="${ty-88}" r="2.5" fill="#c22"/>`;s+=`<circle cx="${tx}" cy="${ty-91}" r="2.5" fill="#04c"/>`;s+=`<circle cx="${tx+5}" cy="${ty-88}" r="2.5" fill="#2a2"/>`;
+  s+=`<rect x="${tx-7}" y="${ty-60}" width="14" height="7" fill="#ddd"/>`;
+  return{svg:s,x:tx,y:ty-100,w:58,h:106};
+}
+function studyNPC(W,H,fY){
+  const dx=W*.55,dy=fY-40;let s='';
+  s+=`<rect x="${dx-48}" y="${dy}" width="96" height="9" fill="#5a3a1a" stroke="#3a1a00" stroke-width="2"/>`;s+=`<rect x="${dx-44}" y="${dy+9}" width="8" height="28" fill="#4a2a0a"/>`;s+=`<rect x="${dx+36}" y="${dy+9}" width="8" height="28" fill="#4a2a0a"/>`;
+  s+=`<rect x="${dx-42}" y="${dy-10}" width="18" height="12" fill="#c40"/>`;s+=`<rect x="${dx-20}" y="${dy-7}" width="14" height="9" fill="#04a"/>`;s+=`<rect x="${dx+9}" y="${dy-5}" width="20" height="7" fill="#ddd" opacity=".8"/>`;
+  s+=`<rect x="${dx+29}" y="${dy-17}" width="2" height="18" fill="#eee"/>`;s+=`<polygon points="${dx+28},${dy-17} ${dx+32},${dy-24} ${dx+30},${dy-17}" fill="#ddd"/>`;
+  s+=`<rect x="${dx-12}" y="${dy-60}" width="24" height="60" fill="#1a3a6a"/>`;s+=`<rect x="${dx-8}" y="${dy-58}" width="16" height="58" fill="#2a4a7a"/>`;
+  s+=`<rect x="${dx-14}" y="${dy-58}" width="8" height="5" fill="#1a3a6a"/>`;s+=`<rect x="${dx+6}" y="${dy-58}" width="8" height="5" fill="#1a3a6a"/>`;
+  s+=`<rect x="${dx-36}" y="${dy-50}" width="22" height="5" fill="#1a3a6a"/>`;s+=`<rect x="${dx+14}" y="${dy-50}" width="22" height="5" fill="#1a3a6a"/>`;
+  s+=`<rect x="${dx-38}" y="${dy-54}" width="7" height="7" fill="#fca"/>`;s+=`<rect x="${dx+31}" y="${dy-54}" width="7" height="7" fill="#fca"/>`;
+  s+=`<rect x="${dx-9}" y="${dy-82}" width="18" height="20" fill="#fca"/>`;
+  s+=`<rect x="${dx-7}" y="${dy-76}" width="3" height="3" fill="#36a"/>`;s+=`<rect x="${dx+4}" y="${dy-76}" width="3" height="3" fill="#36a"/>`;s+=`<rect x="${dx-4}" y="${dy-69}" width="8" height="2" fill="#c86"/>`;
+  s+=`<rect x="${dx-10}" y="${dy-86}" width="20" height="7" fill="#4a3a2a"/>`;s+=`<rect x="${dx-12}" y="${dy-82}" width="3" height="12" fill="#4a3a2a"/>`;
+  return{svg:s,x:dx,y:dy-86,w:48,h:96};
+}
+function cottageNPC(W,H,fY){
+  const tx=W*.5,ty=fY-40;let s='';
+  s+=`<rect x="${tx-10}" y="${ty-52}" width="20" height="52" fill="#6a4a2a"/>`;s+=`<rect x="${tx-6}" y="${ty-50}" width="12" height="50" fill="#7a5a3a"/>`;
+  s+=`<rect x="${tx-12}" y="${ty-48}" width="7" height="5" fill="#6a4a2a"/>`;s+=`<rect x="${tx+5}" y="${ty-48}" width="7" height="5" fill="#6a4a2a"/>`;
+  s+=`<rect x="${tx-34}" y="${ty-40}" width="22" height="6" fill="#6a4a2a"/>`;s+=`<rect x="${tx+12}" y="${ty-40}" width="22" height="6" fill="#6a4a2a"/>`;
+  s+=`<rect x="${tx-36}" y="${ty-44}" width="7" height="7" fill="#c96"/>`;s+=`<rect x="${tx+29}" y="${ty-44}" width="7" height="7" fill="#c96"/>`;
+  s+=`<rect x="${tx+29}" y="${ty-50}" width="2" height="9" fill="#ccc"/>`;
+  s+=`<rect x="${tx-9}" y="${ty-74}" width="18" height="20" fill="#c96"/>`;
+  s+=`<rect x="${tx-7}" y="${ty-68}" width="3" height="3" fill="#4a3a22"/>`;s+=`<rect x="${tx+4}" y="${ty-68}" width="3" height="3" fill="#4a3a22"/>`;s+=`<rect x="${tx-3}" y="${ty-61}" width="6" height="2" fill="#a74"/>`;
+  s+=`<rect x="${tx-10}" y="${ty-80}" width="20" height="8" fill="#888"/>`;s+=`<rect x="${tx-12}" y="${ty-76}" width="4" height="14" fill="#888"/>`;s+=`<rect x="${tx+8}" y="${ty-76}" width="4" height="14" fill="#888"/>`;
+  s+=`<rect x="${tx-6}" y="${ty-54}" width="12" height="7" fill="#999"/>`;
+  s+=`<rect x="${tx-9}" y="${ty-88}" width="18" height="9" fill="#5a4a2a"/>`;s+=`<polygon points="${tx-7},${ty-88} ${tx},${ty-102} ${tx+7},${ty-88}" fill="#5a4a2a"/>`;
+  s+=`<ellipse cx="${tx}" cy="${ty-44}" rx="13" ry="7" fill="#3a2a1a" stroke="#4a3a2a" stroke-width="1"/>`;s+=`<ellipse cx="${tx}" cy="${ty-47}" rx="10" ry="5" fill="#aa7744"/>`;
+  return{svg:s,x:tx,y:ty-102,w:78,h:102};
+}
+
+function talkNPC(){
+  if(talkDone)return;talkDone=true;
+  const pr=document.getElementById('ipr');if(pr)pr.style.display='none';
+  const hname=SEL.char?.name||'adventurer';
+  document.getElementById('dp-txt').textContent=`"Welcome, ${hname}. What is it you want to know?"`;
+  document.getElementById('qlst').style.display='flex';
+}
+
+async function askQ(btn,type){
+  document.querySelectorAll('.qbtn').forEach(b=>b.disabled=true);
+  document.getElementById('int-vs').style.display='none';
+
+  if(type==='votes'){
+    const d=SEL.drep;
+    document.getElementById('dp-txt').textContent=`"Behold my record, ${SEL.char?.name||'adventurer'}. ${d.votesLastYear||0} votes cast in the past year — every one a sworn oath."`;
+    document.getElementById('int-vs').innerHTML=`<h3>VOTE RECORD</h3><div class="vrow"><div class="vrid">Votes cast in past year</div><div class="vy">${d.votesLastYear||0}</div></div>`;
+    document.getElementById('int-vs').style.display='block';
+    document.querySelectorAll('.qbtn').forEach(b=>b.disabled=false);
+    return;
+  }
+
+  const d=SEL.drep,tier=SEL.dist||'castle';
+  const adaP=fmt(d.power||0);
+  const tl={castle:'Grand Lord',manor:'Noble',cottage:'Village Elder'}[tier];
+  const setting={castle:'seated upon your throne in a grand throne room',manor:'in your private study surrounded by books and firelight',cottage:'eating a simple meal at your humble kitchen table'}[tier];
+  const hero=SEL.char?.name||'adventurer';
+
+  /* Use the DRep's REAL registered objectives/motivations/qualifications as context */
+  const realData = [
+    d.objectives ? `Objectives: ${d.objectives.slice(0,300)}` : '',
+    d.motivations ? `Motivations: ${d.motivations.slice(0,300)}` : '',
+    d.qualifications ? `Qualifications: ${d.qualifications.slice(0,300)}` : '',
+  ].filter(Boolean).join('\n');
+
+  const prompts = {
+    intro: `You are a Cardano DRep named "${dname(d)}" with the title of ${tl} in a medieval RPG world. You are ${setting}. You hold ${adaP} of voting power. A champion named ${hero} has come to visit.\n\nYour real registered information:\n${realData||'No information registered.'}\n\nIntroduce yourself dramatically in 2-3 sentences, in medieval character, drawing from your real objectives/motivations. Under 60 words.`,
+    power: `You are Cardano DRep "${dname(d)}" — a ${tl} with ${adaP} of voting power, ${setting}. ${hero} asks about your power.\n\nYour real motivations: ${d.motivations?.slice(0,200)||'Not registered.'}\n\nBoast dramatically in medieval character about your voting power, referencing the grandeur of your dwelling. Under 60 words.`,
+    creed: `You are Cardano DRep "${dname(d)}" — a ${tl}, ${setting}. ${hero} asks your voting creed.\n\nYour real objectives: ${d.objectives?.slice(0,400)||'Not registered.'}\n\nExplain your voting philosophy to ${hero} in medieval character, drawing directly from your real stated objectives. 2-3 sentences, under 65 words.`,
+  };
+
+  document.getElementById('dp-txt').textContent='...';
+  try{
+    const resp=await fetch(ANTHROPIC_API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompts[type]}]})});
+    const data=await resp.json();
+    const text=data.content?.map(c=>c.text||'').join('')||'...';
+    document.getElementById('dp-txt').textContent=`"${text.trim()}"`;
+  }catch(e){
+    document.getElementById('dp-txt').textContent='"The words escape me for now... try again."';
+  }
+  document.querySelectorAll('.qbtn').forEach(b=>b.disabled=false);
+}
+</script>
+</body>
+</html>
